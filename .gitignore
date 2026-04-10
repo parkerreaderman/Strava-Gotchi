@@ -5,6 +5,7 @@
 
 # local / IDE (optional)
 .claude/
+.cursor/
 
 # Local Rive course assets (not part of the shipped app)
 /Rive_character_animation_course/

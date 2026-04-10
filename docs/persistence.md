@@ -7,7 +7,7 @@
   - `Activity`: Cached 90-day activity summaries for speed + offline metrics.
 
 ### Setup
-1. Copy `.env.local.example` to `.env` (or update existing file) and add:
+1. Copy `docs/env.local.example` to `.env.local` (project root) and add:
    ```
    DATABASE_URL="file:./dev.db"
    ```

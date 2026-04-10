@@ -23,7 +23,7 @@ A **gamified fitness companion**: a Tamagotchi-style character that reflects rea
 | `lib/` | Training metrics, sprite/state helpers, shared UI logic |
 | `prisma/` | Schema and migrations (local SQLite via `DATABASE_URL`) |
 | `public/` | Static assets |
-| `docs/` | Env template, security notes, CI, pipeline docs, internal checklists |
+| `docs/` | Env template, security, CI, deploy, persistence, testing notes |
 | `.github/workflows/` | CI workflow |
 
 ## Quick start
