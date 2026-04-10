@@ -2,29 +2,33 @@
 
 A **gamified fitness companion**: a Tamagotchi-style character that reflects real training load from **Strava**, using fitness and fatigue metrics (CTL, ATL, TSB) similar to common endurance tooling.
 
-![App screenshot](docs/assets/app-screenshot.png)
+App screenshot
 
 ## At a glance
 
-| | |
-| --- | --- |
-| **Stack** | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Prisma + SQLite |
-| **Integrations** | Strava API v3 (OAuth), activity sync |
-| **CI** | GitHub Actions — lint + tests (see `docs/ci.md`) |
+
+|                  |                                                                              |
+| ---------------- | ---------------------------------------------------------------------------- |
+| **Stack**        | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Prisma + SQLite |
+| **Integrations** | Strava API v3 (OAuth), activity sync                                         |
+| **CI**           | GitHub Actions — lint + tests (see `docs/ci.md`)                             |
+
 
 **What it demonstrates:** full-stack OAuth flow, API routes, persisted sessions, domain logic for training metrics, and a cohesive UI around a single “character state” model.
 
 ## Repository layout
 
-| Path | Purpose |
-| --- | --- |
-| `app/` | Routes, layout, global styles; `app/api/` for Strava auth, activities, gamification, health |
-| `components/` | UI pieces (pixel avatar, metrics, settings, collapsible sections) |
-| `lib/` | Training metrics, sprite/state helpers, shared UI logic |
-| `prisma/` | Schema and migrations (local SQLite via `DATABASE_URL`) |
-| `public/` | Static assets |
-| `docs/` | Env template, security, CI, deploy, persistence, testing notes |
-| `.github/workflows/` | CI workflow |
+
+| Path                 | Purpose                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `app/`               | Routes, layout, global styles; `app/api/` for Strava auth, activities, gamification, health |
+| `components/`        | UI pieces (pixel avatar, metrics, settings, collapsible sections)                           |
+| `lib/`               | Training metrics, sprite/state helpers, shared UI logic                                     |
+| `prisma/`            | Schema and migrations (local SQLite via `DATABASE_URL`)                                     |
+| `public/`            | Static assets                                                                               |
+| `docs/`              | Env template, security, CI, deploy, persistence, testing notes                              |
+| `.github/workflows/` | CI workflow                                                                                 |
+
 
 ## Quick start
 
@@ -54,22 +58,26 @@ A **gamified fitness companion**: a Tamagotchi-style character that reflects rea
 
 Copy `docs/env.local.example` to `.env.local` in the project root:
 
-| Variable | Notes |
-| --- | --- |
-| `NEXT_PUBLIC_STRAVA_CLIENT_ID` | Safe to expose in the browser. |
-| `STRAVA_CLIENT_SECRET` | **Server-only** — never use a `NEXT_PUBLIC_` prefix; never commit. |
-| `NEXT_PUBLIC_REDIRECT_URI` | e.g. `http://localhost:3000/api/auth/callback` (must match Strava app settings). |
-| `DATABASE_URL` | e.g. `file:./dev.db` for local SQLite. |
+
+| Variable                       | Notes                                                                            |
+| ------------------------------ | -------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_STRAVA_CLIENT_ID` | Safe to expose in the browser.                                                   |
+| `STRAVA_CLIENT_SECRET`         | **Server-only** — never use a `NEXT_PUBLIC_` prefix; never commit.               |
+| `NEXT_PUBLIC_REDIRECT_URI`     | e.g. `http://localhost:3000/api/auth/callback` (must match Strava app settings). |
+| `DATABASE_URL`                 | e.g. `file:./dev.db` for local SQLite.                                           |
+
 
 Do **not** paste Strava’s dashboard **“Your Access Token” / “Your Refresh Token”** into env files for normal use; this app uses **OAuth** (“Connect with Strava”) so each user gets proper tokens. For production secrets and rotation, see `docs/secrets.md`.
 
 ### Security quick reference
 
-| Do | Don’t |
-| --- | --- |
+
+| Do                                                       | Don’t                                                    |
+| -------------------------------------------------------- | -------------------------------------------------------- |
 | Keep secrets in `.env.local` or your host’s secret store | Commit `.env.local` or share secrets in screenshots/chat |
-| Use OAuth in the app for user data | Rely on Strava dashboard personal API tokens for the app |
-| Put only the **client ID** in `NEXT_PUBLIC_*` | Put the **client secret** in any `NEXT_PUBLIC_` variable |
+| Use OAuth in the app for user data                       | Rely on Strava dashboard personal API tokens for the app |
+| Put only the **client ID** in `NEXT_PUBLIC_`*            | Put the **client secret** in any `NEXT_PUBLIC_` variable |
+
 
 Local SQLite (`*.db`) may contain tokens and account data; it stays gitignored.
 
