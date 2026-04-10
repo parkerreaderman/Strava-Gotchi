@@ -21,7 +21,6 @@ export default function CollapsibleSection({
     <section
       className="rounded-xl border border-slate-700 overflow-hidden bg-slate-800/60"
       role="region"
-      aria-expanded={open}
       aria-label={title}
     >
       <button

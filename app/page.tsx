@@ -10,7 +10,7 @@ import AchievementToast, { Achievement } from '@/components/AchievementToast';
 import MetricCard from '@/components/MetricCard';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import SettingsPanel from '@/components/SettingsPanel';
-import RecoveryMeter, { RecoveryStatus } from '@/components/RecoveryMeter';
+import RecoveryMeter from '@/components/RecoveryMeter';
 import RestDayLogger from '@/components/RestDayLogger';
 import ChallengeCard, { Challenge } from '@/components/ChallengeCard';
 import StreakDisplay from '@/components/StreakDisplay';
@@ -75,47 +75,49 @@ export default function Home() {
   // Track if initial fetch has been done to prevent duplicate fetches
   const hasFetchedRef = useRef(false);
 
-  // Check for authentication and user profile
+  // Check for authentication and user profile (defer updates so we don't sync-setState in effect body)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const athleteId = params.get('athlete_id');
-    const token = params.get('access_token');
+    queueMicrotask(() => {
+      const params = new URLSearchParams(window.location.search);
+      const athleteId = params.get('athlete_id');
+      const token = params.get('access_token');
 
-    // If we have athlete_id in URL, we just completed OAuth
-    if (athleteId) {
-      setAccessToken('authenticated'); // Token is in httpOnly cookie
-      localStorage.setItem('strava_connected', 'true');
-      localStorage.setItem('strava_athlete_id', athleteId);
-      window.history.replaceState({}, '', '/');
-    } else if (token) {
-      // Legacy: access token passed directly
-      setAccessToken(token);
-      localStorage.setItem('strava_access_token', token);
-      localStorage.setItem('strava_connected', 'true');
-      window.history.replaceState({}, '', '/');
-    } else {
-      // Check if we were previously connected
-      const wasConnected = localStorage.getItem('strava_connected');
-      const storedToken = localStorage.getItem('strava_access_token');
-      if (wasConnected || storedToken) {
-        setAccessToken(storedToken || 'authenticated');
+      // If we have athlete_id in URL, we just completed OAuth
+      if (athleteId) {
+        setAccessToken('authenticated'); // Token is in httpOnly cookie
+        localStorage.setItem('strava_connected', 'true');
+        localStorage.setItem('strava_athlete_id', athleteId);
+        window.history.replaceState({}, '', '/');
+      } else if (token) {
+        // Legacy: access token passed directly
+        setAccessToken(token);
+        localStorage.setItem('strava_access_token', token);
+        localStorage.setItem('strava_connected', 'true');
+        window.history.replaceState({}, '', '/');
+      } else {
+        // Check if we were previously connected
+        const wasConnected = localStorage.getItem('strava_connected');
+        const storedToken = localStorage.getItem('strava_access_token');
+        if (wasConnected || storedToken) {
+          setAccessToken(storedToken || 'authenticated');
+        }
       }
-    }
 
-    // Check for user profile
-    const storedProfile = localStorage.getItem('user_profile');
-    if (storedProfile) {
-      setUserProfile(JSON.parse(storedProfile));
-    } else if (athleteId || token || localStorage.getItem('strava_connected')) {
-      // Show setup if connected but no profile
-      setShowSetup(true);
-    }
+      // Check for user profile
+      const storedProfile = localStorage.getItem('user_profile');
+      if (storedProfile) {
+        setUserProfile(JSON.parse(storedProfile));
+      } else if (athleteId || token || localStorage.getItem('strava_connected')) {
+        // Show setup if connected but no profile
+        setShowSetup(true);
+      }
 
-    // Load wearables from localStorage
-    const storedWearables = localStorage.getItem('wearables');
-    if (storedWearables) {
-      setWearables(JSON.parse(storedWearables));
-    }
+      // Load wearables from localStorage
+      const storedWearables = localStorage.getItem('wearables');
+      if (storedWearables) {
+        setWearables(JSON.parse(storedWearables));
+      }
+    });
   }, []);
 
   const fetchActivities = useCallback(async (forceRefresh = false, options?: { quiet?: boolean }) => {
@@ -259,7 +261,9 @@ export default function Home() {
   useEffect(() => {
     if (accessToken && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
-      fetchActivities();
+      queueMicrotask(() => {
+        void fetchActivities();
+      });
     }
   }, [accessToken, fetchActivities]);
 

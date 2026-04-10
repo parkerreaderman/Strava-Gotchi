@@ -31,7 +31,7 @@ interface PixelCharacterProps {
   animated?: boolean;
   /** Animation speed multiplier */
   animationSpeed?: number;
-  /** Use runner sprite sheet (TIRED/READY/ENERGIZED) instead of procedural SVG */
+  /** Use runner sprite sheet instead of procedural SVG (off by default) */
   useRunnerSprite?: boolean;
   /** Additional CSS classes */
   className?: string;
@@ -61,7 +61,7 @@ export default function PixelCharacter({
   level,
   animated = true,
   animationSpeed = 1,
-  useRunnerSprite = true,
+  useRunnerSprite = false,
   className = '',
 }: PixelCharacterProps) {
   const [frame, setFrame] = useState(0);

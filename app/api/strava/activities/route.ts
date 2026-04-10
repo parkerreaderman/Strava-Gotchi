@@ -15,8 +15,6 @@ import {
 import {
   calculateActivityXP,
   getLevelFromXP,
-  getLevelProgress,
-  getXPUntilNextLevel,
   calculateNewStreak,
   checkAllAchievements,
 } from '@/lib/gamification';
@@ -284,20 +282,6 @@ const MIN_STRAVA_CALL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes minimum between 
 const inFlightRequests = new Set<number>();
 
 /**
- * Check if we should skip Strava API and use cached DB data
- * More aggressive caching to prevent rate limit issues
- */
-const shouldUseCachedData = (userId: number, forceRefresh: boolean): boolean => {
-  if (forceRefresh) return false;
-
-  const lastCall = lastStravaCallCache.get(userId);
-  if (!lastCall) return false;
-
-  const timeSinceLastCall = Date.now() - lastCall;
-  return timeSinceLastCall < MIN_STRAVA_CALL_INTERVAL_MS;
-};
-
-/**
  * Record that we made a Strava API call for this user
  */
 const recordStravaCall = (userId: number): void => {
@@ -309,9 +293,9 @@ const recordStravaCall = (userId: number): void => {
  * and reuses cached data when nothing changed.
  *
  * Rate limiting strategy:
- * 1. Check if we have recent cached data in DB (called Strava < 1 minute ago)
- * 2. If yes, return cached data without hitting Strava
- * 3. If no, fetch from Strava and update cache
+ * 1. Prefer DB cache when we have recent summaries and are inside the min Strava call interval (or no prior call recorded).
+ * 2. Avoid concurrent Strava calls per user; fall back to cache when another request is in flight.
+ * 3. Otherwise fetch from Strava, persist, and record the call time.
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

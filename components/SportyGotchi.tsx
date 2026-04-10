@@ -68,7 +68,7 @@ interface SportyGotchiProps {
  * Displays the pixel art Tamagotchi-style fitness companion.
  * Appearance changes based on training load and fatigue state.
  *
- * Now powered by high-quality pixel art!
+ * Procedural pixel character with locker wearables.
  */
 export default function SportyGotchi({
   state,
