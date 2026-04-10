@@ -1,0 +1,33 @@
+---
+description: Sporty Gotchi v3 simplified UI — state-driven layout, slim header, hero-first, collapsible secondary. Apply when editing app/page, header, hero, locker, or collapsible sections.
+globs: app/page.tsx,components/SettingsPanel.tsx,components/CollapsibleSection.tsx,components/MetricCard.tsx,components/Locker.tsx,components/SportyGotchi.tsx,lib/training-metrics.ts,lib/ui/state-theme.ts
+alwaysApply: false
+---
+
+# v3 Simplified UI Context
+
+## Design principles
+
+- **State-driven background**: Fatigue state (fresh/optimal/trained/fatigued/overtrained) drives full-page gradient (weather-app style). Use `STATE_GRADIENTS[fatigueState]` on root wrapper.
+- **Slim header**: One row — [Sporty Gotchi] [Lv N] [Friends] [Locker] [Settings]. No Edit Profile/Disconnect/Achievements in bar; those live in SettingsPanel.
+- **Hero-first**: Main view = avatar + one-line status only. Use `getShortStateDescription(fatigueState)` under the avatar. Single column `max-w-lg mx-auto`.
+- **Progressive disclosure**: Recovery, Challenges, Training details, Recent activities, Streaks are collapsible sections below the Locker; all collapsed by default.
+- **Single column**: No 4-column grid; no gamification sidebar on main view. One focal area (avatar as hero).
+
+## Key files
+
+| Purpose | File(s) |
+|---------|---------|
+| Page layout, header, hero, sections | `app/page.tsx` |
+| State → gradient map | `app/page.tsx` or `lib/ui/state-theme.ts` |
+| Short status copy | `lib/training-metrics.ts` (`getShortStateDescription`) |
+| Settings drawer | `components/SettingsPanel.tsx` |
+| Collapsible wrapper | `components/CollapsibleSection.tsx` |
+| Metric cards (in Training details section) | `components/MetricCard.tsx` |
+
+## Conventions
+
+- Locker section has `id="locker"` for header scroll target.
+- Header Locker button: `document.getElementById('locker')?.scrollIntoView({ block: 'start' })`.
+- Use existing `SetupScreen`, `AchievementGrid`, `RecoveryMeter`, `RestDayLogger`, `ChallengeCard`, `StreakDisplay`, `TrainingGraph` inside collapsible sections; do not remove them.
+- Extract `MetricCard` from page into `components/MetricCard.tsx`; keep same props (label, value, icon, color).

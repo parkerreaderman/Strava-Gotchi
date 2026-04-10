@@ -1,0 +1,184 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================
+// CORE MODELS
+// ============================================
+
+model User {
+  id               Int           @id @default(autoincrement())
+  stravaAthleteId  Int           @unique
+  firstName        String?
+  lastName         String?
+  profileMediumUrl String?
+  profileUrl       String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Gamification fields
+  xp               Int           @default(0)
+  level            Int           @default(1)
+  currentStreak    Int           @default(0)
+  longestStreak    Int           @default(0)
+  lastActivityDate DateTime?
+  totalActivities  Int           @default(0)
+  totalDistance    Float         @default(0)
+  totalDuration    Int           @default(0)
+  evolutionStage   Int           @default(1)
+
+  // Relations
+  token            StravaToken?
+  activities       Activity[]
+  achievements     UserAchievement[]
+  challenges       UserChallenge[]
+  streakFreezes    StreakFreeze[]
+  restDays         RestDay[]
+  connectedProviders ConnectedProvider[]
+}
+
+model StravaToken {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String
+  refreshToken String
+  expiresAt    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Activity {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stravaActivityId String   @unique
+  name             String
+  type             String
+  startDate        DateTime
+  duration         Int
+  distance         Float?
+  averageHeartRate Float?
+  maxHeartRate     Float?
+  tss              Float?
+  checksum         String
+  xpEarned         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId, startDate])
+}
+
+// ============================================
+// GAMIFICATION MODELS
+// ============================================
+
+model Achievement {
+  id          Int               @id @default(autoincrement())
+  slug        String            @unique
+  name        String
+  description String
+  category    String            // distance, streak, consistency, milestone, special
+  iconUrl     String?
+  xpReward    Int               @default(0)
+  requirement String            // JSON string: { type: 'distance', value: 100000 }
+  tier        String            @default("bronze") // bronze, silver, gold, platinum
+  sortOrder   Int               @default(0)
+  createdAt   DateTime          @default(now())
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId Int
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model Challenge {
+  id          Int             @id @default(autoincrement())
+  slug        String          @unique
+  name        String
+  description String
+  type        String          // daily, weekly
+  requirement String          // JSON string: { type: 'duration', value: 1800 }
+  xpReward    Int
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+
+  userChallenges UserChallenge[]
+}
+
+model UserChallenge {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId Int
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  progress    Float     @default(0)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  claimed     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+}
+
+model StreakFreeze {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model RestDay {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  type      String   // auto_detected, manual, active_recovery
+  notes     String?
+  quality   Int?     // 1-5 rating
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+// ============================================
+// MULTI-PROVIDER SUPPORT
+// ============================================
+
+model ConnectedProvider {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String   // strava, garmin, apple_health, coros
+  accessToken  String
+  refreshToken String?
+  expiresAt    Int?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
